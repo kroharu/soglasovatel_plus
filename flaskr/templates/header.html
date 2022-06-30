@@ -1,0 +1,43 @@
+<style>
+.text-header {
+    color: #fc924a;
+    font-weight: 700;
+}
+.container-header {
+    background-color: rgb(241, 241, 241);
+    width: 100%;
+    padding: 0 50px;
+}
+.name-header {
+    background-color: rgb(241, 241, 241);
+    border: none;
+    color: #343434;
+}
+.link {
+    color: #8600caad;
+}
+</style>
+
+<div class="container-header">
+    <header class="d-flex flex-wrap justify-content-center py-3 mb-4">
+        <a href="{{ url_for('web.main') }}" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+            <span class="fs-4 text-header">СогласовательПлюс</span>
+        </a>
+
+        {% if current_user.role.can_add %}
+        <ul class="nav nav-pills">
+            <li class="nav-item"><a href="{{ url_for('web.main') }}" class="nav-link link">Главная</a></li>
+        </ul>
+        <ul class="nav nav-pills">
+            <li class="nav-item"><a href="{{ url_for('web.types.main') }}" class="nav-link link">Типы договоров</a></li>
+        </ul>
+        {% endif %}
+        <a class="btn btn-light dropdown-toggle name-header" href="#" role="button" data-bs-toggle="dropdown">
+            {{ current_user.name }} ({{ current_user.role.name }})
+        </a>
+        <ul class="dropdown-menu">
+            <li><button form="logout-form" class="dropdown-item" href="#">Выйти</button></li>
+        </ul>
+        <form action="{{ url_for('web.auth.logout') }}" method="post" id="logout-form"></form>
+    </header>
+</div>

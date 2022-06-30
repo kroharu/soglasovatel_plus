@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block body %}
+<style>
+  .button-orange {
+    background-color: #fc924a !important;
+    border: #fc924a !important;
+  }
+  .main-text {
+    color: #5d5d5d !important;
+  }
+  .link {
+    color: #8600caad;
+  }
+  .alert-primary {
+    background-color: #fc914a9a !important;
+    color: #5d5d5d;
+  }
+  .status_wait {
+    color: #fc924a !important;
+    font-weight: 600;
+  }
+  .status_ok {
+    color: #06a601 !important;
+    font-weight: 600;
+  }
+  .status_remarks {
+    color: red !important;
+    font-weight: 600;
+  }
+</style>
+<div class="container">
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="alert alert-primary alert-dismissible fade show">
+        {{ messages[0] }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endif %}
+  {% endwith %}
+  {% if current_user.role.can_add %}
+    <h5 class="main-text">
+      Вы загрузили следующие договоры
+    </h5>
+    <table class="table main-text">
+      <thead>
+        <tr>
+          <th>№</th>
+          <th>Договор</th>
+          <th>Контрагент</th>
+          <th>Дата регистрации</th>
+          <th>Статус</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if added_contracts | length > 0 %}
+          {% for contract in added_contracts %}
+            <tr>
+              <th>{{ loop.index }}</th>
+              <td><a class="link" href="{{ url_for('web.contracts.page', contract_id=contract.id) }}">
+                {{ contract.title }}
+              </a></td>
+              <td>{{ contract.name }}</td>
+              <td>{{ contract.created_at.strftime("%H:%M %d.%m.%Y") }}</td>
+                {% if contract.sent_at is not none %}
+                <td class="status_wait">Отправлен контрагенту</td>
+                {% elif contract.signed_at is not none %}
+                <td class="status_remarks">Ожидает отправки контрагенту</td>
+                {% elif contract.agreed_at is not none %}
+                <td class="status_wait">Ожидает подписи директора</td>
+                {% elif contract.agreed_by_all is true %}
+                <td class="status_remarks">Необходима виза</td>
+                {% elif contract.agreed_by_all is false %}
+                <td class="status_wait">
+                  {% set delta = contract.created_at + datetime.timedelta(days=3) - datetime.datetime.now() %}
+                  {% set days = delta.days %}
+                  {% set seconds = delta.seconds %}
+                  {{ time_left(days, seconds) | safe }}
+                </td>
+                {% endif %}
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="5" style="text-align: center">Договоры не загружены</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+    <a href="{{ url_for('web.contracts.upload_page') }}" type="button" class="btn button-orange btn-primary ">Загрузить договор</a>
+    <br/>
+    <br/>
+  {% endif %}
+
+  {% if current_user.role.can_sign is false %}
+    <h5>Договоры для вашего согласования</h5>
+      <table class="table main-text">
+        <thead>
+          <tr>
+            <th>№</th>
+            <th>Договор</th>
+            <th>Контрагент</th>
+            <th>Дата регистрации</th>
+            <th>Оставшееся время</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if contracts_for | length > 0 %}
+            {% for contract in contracts_for %}
+              <tr>
+                <th>{{ loop.index }}</th>
+                <td><a class="link" href="{{ url_for('web.contracts.comment_page', cvu_id=contract.cvu_id) }}">
+                  {{ contract.title }}
+                </a></td>
+                <td>{{ contract.name }}</td>
+                <td>{{ contract.created_at.strftime("%H:%M %d.%m.%Y") }}</td>
+                <td class="status_wait">
+                  {% set delta = contract.created_at + datetime.timedelta(days=3) - datetime.datetime.now() %}
+                  {% set days = delta.days %}
+                  {% set seconds = delta.seconds %}
+                  {{ time_left(days, seconds) | safe }}
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+          <tr><td colspan="5" style="text-align: center">Договоров для согласования нет</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+  {% endif %}
+
+  {% if current_user.role.can_sign %}
+    <h5 class="main-text">
+      Договоры для вашего подписания
+    </h5>
+    <table class="table main-text">
+      <thead>
+        <tr>
+          <th>№</th>
+          <th>Договор</th>
+          <th>Контрагент</th>
+          <th>Дата регистрации</th>
+          <th>Статус</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if contracts_for_sign | length > 0 %}
+          {% for contract in contracts_for_sign %}
+            <tr>
+              <th>{{ loop.index }}</th>
+              <td><a class="link" href="{{ url_for('web.contracts.page', contract_id=contract.id) }}">
+                {{ contract.title }}
+              </a></td>
+              <td>{{ contract.name }}</td>
+              <td>{{ contract.created_at.strftime("%H:%M %d.%m.%Y") }}</td>
+                {% if contract.sent_at is not none %}
+                <td class="status_wait">Отправлен контрагенту</td>
+                {% elif contract.signed_at is not none %}
+                <td class="status_wait">Ожидает отправки контрагенту</td>
+                {% elif contract.agreed_at is not none %}
+                <td class="status_remarks">Ожидает подписи директора</td>
+                {% elif contract.agreed_by_all is true %}
+                <td class="status_wait">Необходимо визировать</td>
+                {% elif contract.agreed_by_all is false %}
+                <td class="status_wait"></td>
+                  {% set delta = contract.created_at + datetime.timedelta(days=3) - datetime.datetime.now() %}
+                  {% set days = delta.days %}
+                  {% set seconds = delta.seconds %}
+                  {{ time_left(days, seconds) | safe }}
+                {% endif %}
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="5" style="text-align: center">Договоров для подписания нет</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+    <br/>
+    <br/>
+  {% endif %}
+</div>
+{% endblock %}

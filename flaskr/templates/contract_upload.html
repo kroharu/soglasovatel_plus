@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block body %}
+<style>
+  .button-orange {
+    background-color: #fc924a !important;
+    border: #fc924a !important;
+  }
+  .main-text {
+    color: #5d5d5d !important;
+  }
+</style>
+<div class="container">
+  <h5 class="main-text">Загрузка договора</h5>
+  <div class="row">
+    <div class="col-6">
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="alert alert-danger">
+            {{ messages[0] }}
+          </div>
+        {% endif %}
+      {% endwith %}
+      <div class="mb-3">
+        <label for="contract-file" class="form-label main-text">Файл договора</label>
+        <input name="file" form="form-upload" required type="file" class="form-control" id="contract-file">
+      </div>
+      <button class="btn btn-primary button-orange" form="form-upload">Отправить на согласование</button>
+    </div>
+  </div>
+</div>
+<form enctype="multipart/form-data" id="form-upload" method="post" action="{{ url_for('web.contracts.upload')}}"></form>
+{% endblock %}

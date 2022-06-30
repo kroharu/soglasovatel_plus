@@ -1,0 +1,18 @@
+.approval {
+    display: flex;
+    width: 100%;
+}
+
+.approval__left {
+    width: 40% !important;
+}
+
+.approval__button {
+    margin: 5px;
+}
+
+.form-control {
+    margin: 15px 0;
+}
+
+

@@ -1,0 +1,28 @@
+.second-title {
+    font-size: 25px;
+    font-weight: 600;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.upload-contract-container {
+    display: flex;
+}
+
+.upload-contract-container__left {
+    margin-left: 50px;
+    width: 30%;
+}
+.form-label {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.upload-contract-container__right {
+    margin-left: 50px;
+    width: 50%;
+}
+
+#requisites-textarea {
+    margin-bottom: 20px;
+}

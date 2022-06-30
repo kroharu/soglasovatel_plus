@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="container">
+    <h5>Типы договоров</h5>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>№</th>
+          <th>Тип</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if types | length > 0 %}
+          {% for t in types %}
+            <tr>
+              <th>{{ loop.index }}</th>
+              <td>{{ t.name }}</td>
+              <td>
+                <button type="button" id="openComments" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#type{{ t.id }}">
+                  Открыть
+                </button>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+        <tr><td colspan="3">Типы договор не найдены</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+</div>
+
+{% for t in types %}
+<form enctype="multipart/form-data" id="formsavetype{{ t.id }}" method="post" action="{{ url_for('web.types.save', t_id=t.id) }}"></form>
+<div class="modal" id="type{{ t.id }}" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ t.name }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Подразделение</th>
+              <th>ФИО</th>
+            </tr>
+          </thead>
+          <tbody id="comments">
+          {% for u in users %}
+            <tr>
+              <td>
+                <input form="formsavetype{{ t.id }}"
+                         {% if u.id in t.users %} checked {% endif %}
+                         name="users"
+                         type="checkbox"
+                         value="{{ u.id }}">
+              </td>
+              <td>{{ u.role_name }}</td>
+              <td>{{ u.name }}</td>
+            </tr>
+          {% endfor %}
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+        <button type="submit" class="btn btn-primary" form="formsavetype{{ t.id }}">Сохранить</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

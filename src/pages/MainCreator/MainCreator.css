@@ -1,0 +1,17 @@
+.main-title {
+    font-size: 30px;
+    font-weight: 700;
+    margin-left: 50px;
+}
+
+.draft-contracts {
+    font-size: 25px;
+    font-weight: 600;
+    margin-right: 20px;
+}
+
+.contract-upload-button {
+    margin-left: 50px;
+    margin-top: 10px;
+    display: flex;
+}

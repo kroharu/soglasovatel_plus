@@ -1,0 +1,584 @@
+components:
+  schemas:
+    Agreement:
+      properties:
+        comments:
+          items:
+            $ref: '#/components/schemas/AgreementComment'
+          nullable: true
+          type: array
+        name:
+          type: string
+        role_name:
+          type: string
+        status:
+          nullable: true
+          type: boolean
+        user_id:
+          type: integer
+      type: object
+    AgreementComment:
+      properties:
+        clause:
+          type: string
+        modified:
+          type: string
+        original:
+          type: string
+      type: object
+    Comment:
+      properties:
+        clause:
+          type: string
+        modified:
+          type: string
+        original:
+          type: string
+      required:
+      - clause
+      - modified
+      - original
+      type: object
+    Comments:
+      properties:
+        comments:
+          items:
+            $ref: '#/components/schemas/Comment'
+          type: array
+        status:
+          type: boolean
+      required:
+      - status
+      type: object
+    Contract:
+      properties:
+        agreed_at:
+          nullable: true
+          type: string
+        agreed_by_all:
+          type: boolean
+        agreement:
+          items:
+            $ref: '#/components/schemas/Agreement'
+          type: array
+        created_at:
+          type: string
+        id:
+          type: integer
+        signed_at:
+          nullable: true
+          type: string
+        title:
+          type: string
+      type: object
+    ContractAdded:
+      properties:
+        created_at:
+          type: string
+        id:
+          type: integer
+        title:
+          type: string
+      type: object
+    ContractVersion:
+      properties:
+        created_at:
+          type: string
+        cvu_id:
+          type: integer
+        title:
+          type: string
+      type: object
+    ContractsAdded:
+      properties:
+        contracts:
+          items:
+            $ref: '#/components/schemas/ContractAdded'
+          type: array
+        status:
+          type: string
+      type: object
+    ContractsFor:
+      properties:
+        contracts:
+          items:
+            $ref: '#/components/schemas/ContractVersion'
+          type: array
+        status:
+          type: string
+      type: object
+    Error:
+      properties:
+        error:
+          type: string
+        status:
+          type: string
+      type: object
+    InputLogin:
+      properties:
+        login:
+          type: string
+        password:
+          type: string
+      required:
+      - login
+      - password
+      type: object
+    InputUploadContract:
+      properties:
+        agreements:
+          items:
+            type: integer
+          type: array
+        file:
+          type: file
+        partner:
+          type: string
+        sign:
+          type: integer
+        title:
+          type: string
+      required:
+      - agreements
+      - file
+      - partner
+      - sign
+      - title
+      type: object
+    OutputContract:
+      properties:
+        contract:
+          items:
+            $ref: '#/components/schemas/Contract'
+          type: array
+        status:
+          type: string
+      type: object
+    OutputLogin:
+      properties:
+        status:
+          type: string
+      type: object
+    OutputOk:
+      properties:
+        status:
+          type: string
+      type: object
+    OutputUploadContract:
+      properties:
+        last_inserted_id:
+          type: integer
+        status:
+          type: string
+      type: object
+    Role:
+      properties:
+        name:
+          type: string
+        users:
+          items:
+            $ref: '#/components/schemas/User'
+          type: array
+      type: object
+    Roles:
+      properties:
+        roles:
+          items:
+            $ref: '#/components/schemas/Role'
+          type: array
+        status:
+          type: string
+      type: object
+    User:
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+      type: object
+info:
+  title: "\u0421\u043E\u0433\u043B\u0430\u0441\u043E\u0432\u0430\u0442\u0435\u043B\
+    \u044C\u041F\u043B\u044E\u0441 API"
+  version: 0.1.0
+openapi: 3.0.3
+paths:
+  /api/login:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InputLogin'
+        description: "\u041B\u043E\u0433\u0438\u043D \u0438 \u043F\u0430\u0440\u043E\
+          \u043B\u044C \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\
+          \u043B\u044F"
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OutputLogin'
+          description: "\u0423\u0441\u043F\u0435\u0448\u043D\u044B\u0439 \u0432\u0445\
+            \u043E\u0434 \u0432 \u0441\u0438\u0441\u0442\u0435\u043C\u0443"
+      summary: "\u0412\u0445\u043E\u0434 \u0432 \u0441\u0438\u0441\u0442\u0435\u043C\
+        \u0443"
+      tags:
+      - auth
+  /api/logout:
+    post:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OutputLogin'
+          description: "\u0423\u0441\u043F\u0435\u0448\u043D\u044B\u0439 \u0432\u044B\
+            \u0445\u043E\u0434 \u0438\u0437 \u0441\u0438\u0441\u0442\u0435\u043C\u044B"
+      summary: "\u0412\u044B\u0445\u043E\u0434 \u0438\u0437 \u0441\u0438\u0441\u0442\
+        \u0435\u043C\u044B"
+      tags:
+      - auth
+  /api/contracts/created:
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractsAdded'
+          description: "\u0412\u043E\u0437\u0432\u0440\u0430\u0442 \u0438\u043D\u0444\
+            \u043E\u0440\u043C\u0430\u0446\u0438\u0438 \u043E \u0434\u043E\u0433\u043E\
+            \u0432\u043E\u0440\u0430\u0445"
+      summary: "\u041F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u0435 \u0434\u043E\
+        \u0431\u0430\u0432\u043B\u0435\u043D\u043D\u044B\u0445 \u0434\u043E\u0433\u043E\
+        \u0432\u043E\u0440\u043E\u0432 \u0442\u0435\u043A\u0443\u0449\u0435\u0433\u043E\
+        \ \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F"
+      tags:
+      - contracts
+  /api/company/users:
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Roles'
+          description: "\u0412\u043E\u0437\u0432\u0440\u0430\u0442 \u0438\u043D\u0444\
+            \u043E\u0440\u043C\u0430\u0446\u0438\u0438 \u043E \u043F\u043E\u0434\u0440\
+            \u0430\u0437\u0434\u0435\u043B\u0435\u043D\u0438\u044F\u0445"
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: "\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\
+            \u043B\u044C \u043D\u0435 \u0438\u043C\u0435\u0435\u0442 \u043F\u0440\u0430\
+            \u0432 \u0437\u0430\u0433\u0440\u0443\u0436\u0430\u0442\u044C \u0434\u043E\
+            \u0433\u043E\u0432\u043E\u0440\u044B"
+      summary: "\u041F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u0435 \u043F\u043E\
+        \u0434\u0440\u0430\u0437\u0434\u0435\u043B\u0435\u043D\u0438\u0439 \u043A\u043E\
+        \u043C\u043F\u0430\u043D\u0438\u0438"
+      tags:
+      - company
+  /api/contract/{contract_id}:
+    get:
+      parameters:
+      - description: "\u0438\u0434\u0435\u043D\u0442\u0438\u0444\u0438\u043A\u0430\
+          \u0442\u043E\u0440 \u0434\u043E\u0433\u043E\u0432\u043E\u0440\u0430"
+        in: path
+        name: contract_id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OutputContract'
+          description: "\u0412\u043E\u0437\u0432\u0440\u0430\u0442 \u0438\u043D\u0444\
+            \u043E\u0440\u043C\u0430\u0446\u0438\u0438 \u043E \u0434\u043E\u0433\u043E\
+            \u0432\u043E\u0440\u0435"
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: "\u0414\u043E\u0433\u043E\u0432\u043E\u0440 \u043D\u0435 \u043D\
+            \u0430\u0439\u0434\u0435\u043D"
+      summary: "\u041F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u0435 \u0434\u043E\
+        \u0433\u043E\u0432\u043E\u0440\u0430 \u043F\u043E \u0438\u0434\u0435\u043D\
+        \u0442\u0438\u0444\u0438\u043A\u0430\u0442\u043E\u0440\u0443"
+      tags:
+      - contracts
+  /api/contract/upload:
+    post:
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InputUploadContract'
+        description: "\u0418\u043D\u0444\u043E\u0440\u043C\u0430\u0446\u0438\u044F\
+          \ \u043E \u0434\u043E\u0433\u043E\u0432\u043E\u0440\u0435"
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OutputUploadContract'
+          description: "\u0412\u043E\u0437\u0432\u0440\u0430\u0442 \u0438\u043D\u0444\
+            \u043E\u0440\u043C\u0430\u0446\u0438\u0438 \u043E \u0434\u043E\u0433\u043E\
+            \u0432\u043E\u0440\u0435"
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: "\u041E\u0448\u0438\u0431\u043A\u0430 \u0432\u0432\u043E\u0434\
+            \u0430"
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: "\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\
+            \u043B\u044C \u043D\u0435 \u0438\u043C\u0435\u0435\u0442 \u043F\u0440\u0430\
+            \u0432 \u0437\u0430\u0433\u0440\u0443\u0436\u0430\u0442\u044C \u0434\u043E\
+            \u0433\u043E\u0432\u043E\u0440\u044B"
+      summary: "\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430 \u0434\u043E\u0433\
+        \u043E\u0432\u043E\u0440\u0430"
+      tags:
+      - contracts
+  /api/contract/version/{cvu_id}/pdf:
+    get:
+      parameters:
+      - description: "\u0432\u0435\u0440\u0441\u0438\u044F \u0434\u043E\u0433\u043E\
+          \u0432\u043E\u0440\u0430 \u0434\u043B\u044F \u043F\u043E\u043B\u044C\u0437\
+          \u043E\u0432\u0430\u0442\u0435\u043B\u044F"
+        in: path
+        name: cvu_id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/pdf:
+              schema:
+                type: file
+          description: "\u0412\u043E\u0437\u0432\u0440\u0430\u0442 pdf \u0434\u043E\
+            \u0433\u043E\u0432\u043E\u0440\u0430"
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: "\u0414\u043E\u0433\u043E\u0432\u043E\u0440 \u043D\u0435 \u043D\
+            \u0430\u0439\u0434\u0435\u043D"
+      summary: "\u041F\u0440\u043E\u0441\u043C\u043E\u0442\u0440 pdf \u043E\u043F\u0440\
+        \u0435\u0434\u0435\u043B\u0435\u043D\u043D\u043E\u0439 \u0432\u0435\u0440\u0441\
+        \u0438\u0438 \u0434\u043E\u0433\u043E\u0432\u043E\u0440\u0430"
+      tags:
+      - contracts
+  /api/contracts/for:
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContractsFor'
+          description: "\u0412\u043E\u0437\u0432\u0440\u0430\u0442 \u0434\u043E\u0433\
+            \u043E\u0432\u043E\u0440\u043E\u0432 \u0434\u043B\u044F \u0441\u043E\u0433\
+            \u043B\u0430\u0441\u043E\u0432\u0430\u043D\u0438\u044F"
+      summary: "\u041F\u043E\u043B\u0443\u0447\u0435\u043D\u0438\u0435 \u0434\u043E\
+        \u0433\u043E\u0432\u043E\u0440\u043E\u0432 \u0434\u043B\u044F \u0441\u043E\
+        \u0433\u043B\u0430\u0441\u043E\u0432\u0430\u043D\u0438\u044F \u0434\u043B\u044F\
+        \ \u0442\u0435\u043A\u0443\u0449\u0435\u0433\u043E \u043F\u043E\u043B\u044C\
+        \u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044F"
+      tags:
+      - contracts
+  /api/comment/{cvu_id}:
+    post:
+      parameters:
+      - description: "\u0432\u0435\u0440\u0441\u0438\u044F \u0434\u043E\u0433\u043E\
+          \u0432\u043E\u0440\u0430 \u0434\u043B\u044F \u043F\u043E\u043B\u044C\u0437\
+          \u043E\u0432\u0430\u0442\u0435\u043B\u044F"
+        in: path
+        name: cvu_id
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Comments'
+        description: "\u0421\u0442\u0430\u0442\u0443\u0441 \u0438 \u043A\u043E\u043C\
+          \u043C\u0435\u043D\u0442\u0430\u0440\u0438\u0438 (\u043F\u0440\u0438 \u043D\
+          \u0430\u043B\u0438\u0447\u0438\u0438)"
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OutputOk'
+          description: "\u0423\u0441\u043F\u0435\u0448\u043D\u043E\u0435 \u0441\u043E\
+            \u0433\u043B\u0430\u0441\u043E\u0432\u0430\u043D\u0438\u0435"
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: "\u0414\u043E\u0433\u043E\u0432\u043E\u0440 \u043D\u0435 \u043D\
+            \u0430\u0439\u0434\u0435\u043D"
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: "\u041D\u0435\u043A\u043E\u0440\u0440\u0435\u043A\u0442\u043D\
+            \u044B\u0439 \u0434\u043E\u0433\u043E\u0432\u043E\u0440"
+        '415':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: "\u041F\u0435\u0440\u0435\u0434\u0430\u0439\u0442\u0435 \u0434\
+            \u0430\u043D\u043D\u044B\u0435 \u0432 \u0432\u0438\u0434\u0435 json"
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: "\u041D\u0435 \u043F\u0435\u0440\u0435\u0434\u0430\u043D\u044B\
+            \ \u043A\u043E\u043C\u043C\u0435\u043D\u0442\u0430\u0440\u0438\u0438 \u043F\
+            \u0440\u0438 \u0441\u043E\u0433\u043B\u0430\u0441\u043E\u0432\u0430\u043D\
+            \u0438\u0438 \u0441 \u0437\u0430\u043C\u0435\u0447\u0430\u043D\u0438\u044F\
+            \u043C\u0438"
+      summary: "\u0421\u043E\u0433\u043B\u0430\u0441\u043E\u0432\u0430\u043D\u0438\
+        \u0435 \u0434\u043E\u0433\u043E\u0432\u043E\u0440\u0430 \u0442\u0435\u043A\
+        \u0443\u0449\u0438\u043C \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\
+        \u0435\u043B\u0435\u043C"
+      tags:
+      - comments
+  /api/contract/{c_id}/approve:
+    post:
+      parameters:
+      - description: "\u0438\u0434\u0435\u043D\u0442\u0438\u0444\u0438\u043A\u0430\
+          \u0442\u043E\u0440 \u0434\u043E\u0433\u043E\u0432\u043E\u0440\u0430"
+        in: path
+        name: c_id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OutputOk'
+          description: "\u0423\u0441\u043F\u0435\u0448\u043D\u043E\u0435 \u0432\u0438\
+            \u0437\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435"
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: "\u0412\u044B \u043D\u0435 \u043C\u043E\u0436\u0435\u0442\u0435\
+            \ \u0432\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u0442\u044C \u044D\u0442\
+            \u043E\u0442 \u0434\u043E\u0433\u043E\u0432\u043E\u0440"
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: "\u0414\u043E\u0433\u043E\u0432\u043E\u0440 \u043D\u0435 \u043D\
+            \u0430\u0439\u0434\u0435\u043D"
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: "\u0414\u043E\u0433\u043E\u0432\u043E\u0440 \u0443\u0436\u0435\
+            \ \u0437\u0430\u0432\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D \u0438\
+            \u043B\u0438 \u0435\u0449\u0435 \u043D\u0435 \u0441\u043E\u0433\u043B\u0430\
+            \u0441\u043E\u0432\u0430\u043D"
+      summary: "\u0412\u0438\u0437\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435\
+        \ \u0434\u043E\u0433\u043E\u0432\u043E\u0440\u0430 \u044E\u0440\u0438\u0441\
+        \u0442\u043E\u043C"
+      tags:
+      - contracts
+  /api/contract/{c_id}/sign:
+    post:
+      parameters:
+      - description: "\u0438\u0434\u0435\u043D\u0442\u0438\u0444\u0438\u043A\u0430\
+          \u0442\u043E\u0440 \u0434\u043E\u0433\u043E\u0432\u043E\u0440\u0430"
+        in: path
+        name: c_id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OutputOk'
+          description: "\u0423\u0441\u043F\u0435\u0448\u043D\u043E\u0435 \u043F\u043E\
+            \u0434\u043F\u0438\u0441\u0430\u043D\u0438\u0435"
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: "\u0414\u043E\u0433\u043E\u0432\u043E\u0440 \u043D\u0435 \u043D\
+            \u0430\u0439\u0434\u0435\u043D"
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: "\u0412\u044B \u043D\u0435 \u043C\u043E\u0436\u0435\u0442\u0435\
+            \ \u043F\u043E\u0434\u043F\u0438\u0441\u044B\u0432\u0430\u0442\u044C \u0434\
+            \u043E\u0433\u043E\u0432\u043E\u0440\u044B"
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: "\u0414\u043E\u0433\u043E\u0432\u043E\u0440 \u0443\u0436\u0435\
+            \ \u043F\u043E\u0434\u043F\u0438\u0441\u0430\u043D, \u0435\u0449\u0435\
+            \ \u043D\u0435 \u0437\u0430\u0432\u0438\u0437\u0438\u0440\u043E\u0432\u0430\
+            \u043D \u0438\u043B\u0438 \u0435\u0449\u0435 \u043D\u0435 \u0441\u043E\
+            \u0433\u043B\u0430\u0441\u043E\u0432\u0430\u043D"
+      summary: "\u041F\u043E\u0434\u043F\u0438\u0441\u0430\u043D\u0438\u0435 \u0434\
+        \u043E\u0433\u043E\u0432\u043E\u0440\u0430 \u0434\u0438\u0440\u0435\u043A\u0442\
+        \u043E\u0440\u043E\u043C"
+      tags:
+      - contracts
+  /web/: {}
+  /web/login: {}
+  /web/logout: {}
+  /web/contract/{contract_id}: {}
+  /web/contract/upload: {}
+  /web/contract_upload: {}
+  /web/contract/version/{v_id}/pdf: {}
+  /web/contract/version/{cvu_id}/comment: {}
+  /web/contract/update/new/{c_id}: {}
+  /docs/dist/{filename}: {}
+  /docs/{path}: {}
+  /swagger: {}
+  /{path}: {}
+tags:
+- description: "\u0410\u0432\u0442\u043E\u0440\u0438\u0437\u0430\u0446\u0438\u044F"
+  name: auth
+- description: "\u0414\u043E\u0433\u043E\u0432\u043E\u0440\u044B"
+  name: contracts
+- description: "\u041A\u043E\u043C\u043F\u0430\u043D\u0438\u044F"
+  name: company
+- description: "\u041A\u043E\u043C\u043C\u0435\u043D\u0442\u0430\u0440\u0438\u0438"
+  name: comments

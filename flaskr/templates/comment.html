@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% block body %}
+<style>
+  html, body {
+      height: 100%;
+  }
+  .main-text {
+    color: #5d5d5d !important;
+  }
+  button:hover {
+    opacity: 0.8;
+  }
+  .button-orange {
+    background-color: #fc914ae6 !important;
+    border: none;
+  }
+  .button-purple {
+    background-color: #8700caa2 !important;
+    border: none;
+  }
+</style>
+<div class="container main-text" style="height: 80%;">
+  <div class="row" style="height: 100%;">
+    <div class="col-6">
+      <h6>{{ contract.title }}</h6>
+      <p>
+        Контрагент: {{ contract.name }}<br/>
+        Дата регистрации: {{ contract.created_at.strftime("%H:%M %d.%m.%Y") }}<br/>
+        {% set delta = contract.created_at + datetime.timedelta(days=3) - datetime.datetime.now() %}
+        {% set days = delta.days %}
+        {% set seconds = delta.seconds %}
+        {{ time_left(days, seconds) | safe }}
+      </p>
+      <div id="error" style="display: none;" class="alert alert-danger"></div>
+      <button type="submit" form="form-without-comment" class="btn btn-primary button-orange">
+        Согласовать
+      </button>
+      <br />
+      <br />
+      <h6>Добавить комментарии</h6>
+      <div class="mb-3">
+        <label for="clause" class="form-label">Пункт договора</label>
+        <input name="clause" required type="text" class="form-control" id="clause">
+      </div>
+      <div class="mb-3">
+        <label for="textOriginal" class="form-label">Исходный текст</label>
+        <textarea name="original" class="form-control" id="textOriginal" rows="4"></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="textModified" class="form-label">Новый текст</label>
+        <textarea name="modified" class="form-control" id="textModified" rows="4"></textarea>
+      </div>
+<!--      <button class="btn btn-primary" id="addComment">Добавить комментарий</button>-->
+<!--      <button type="button" id="openComments" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">-->
+<!--        Просмотреть комментарии-->
+<!--      </button>-->
+<!--      <button type="submit" form="form-comment" class="btn btn-primary">-->
+<!--        Согласовать с замечаниями-->
+<!--      </button>-->
+      <div class="btn-group" role="group" aria-label="Basic example">
+        <button type="button" class="btn btn-primary button-purple" id="addComment">
+          Добавить комментарий
+        </button>
+        <button type="button" class="btn btn-primary button-purple" id="openComments" data-bs-toggle="modal" data-bs-target="#exampleModal">
+          Просмотреть комментарии
+        </button>
+        <button type="submit" class="btn btn-primary button-orange" form="form-comment">
+          Согласовать с замечаниями
+        </button>
+      </div>
+    </div>
+    <div class="col-6">
+      <iframe src="{{ url_for('web.contracts.get_pdf', v_id=contract.id) }}" frameborder="0" width="100%" height="100%"></iframe>
+    </div>
+  </div>
+</div>
+<form enctype="multipart/form-data" id="form-comment" method="post" action="{{ url_for('web.contracts.comment', cvu_id=cvu_id) }}"></form>
+<form enctype="multipart/form-data" id="form-without-comment" method="post" action="{{ url_for('web.contracts.comment', cvu_id=cvu_id) }}"></form>
+<div class="modal" id="exampleModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Ваши комментарии</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Пункт договора</th>
+              <th>Исходный текст</th>
+              <th>Измененный текст</th>
+            </tr>
+          </thead>
+          <tbody id="comments">
+            <tr>
+              <td>Mark</td>
+              <td>Otto</td>
+              <td>@mdo</td>
+            </tr>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+        <button type="submit" class="btn btn-primary button-orange" form="form-comment">Согласовать с замечаниями</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+<!--    TODO: Доработать логику-->
+  document.addEventListener("DOMContentLoaded", function(event) {
+      let clauses = []
+      let originals = []
+      let modified = []
+      let error = document.getElementById('error')
+      let clause = document.getElementById('clause')
+      let textOriginal = document.getElementById('textOriginal')
+      let textModified = document.getElementById('textModified')
+      let comments = document.getElementById('comments')
+      let formComment = document.getElementById('form-comment')
+      let formWithoutComment = document.getElementById('form-without-comment')
+      document.getElementById('addComment').addEventListener('click', () => {
+          error.style.display = 'none'
+          if (clause.value === '' || textOriginal.value === '' || textModified.value === '') {
+              error.innerHTML = 'Заполните все поля'
+              error.style.display = 'block'
+              return
+          }
+          clauses.push(clause.value)
+          originals.push(textOriginal.value)
+          modified.push(textModified.value)
+          clause.value = ''
+          textOriginal.value = ''
+          textModified.value = ''
+      })
+      document.getElementById('openComments').addEventListener('click', () => {
+        comments.innerHTML = ''
+          if (!clauses.length > 0) {
+              comments.innerHTML = '<tr><td style="text-align: center;" colspan="3">Добавьте свои комментарии</td></tr>'
+              return
+          }
+          for (let i = 0; i < clauses.length; i++) {
+              let tr = document.createElement('tr')
+              let td1 = document.createElement('td')
+              td1.innerHTML = clauses[i]
+              let td2 = document.createElement('td')
+              td2.innerHTML = originals[i]
+              let td3 = document.createElement('td')
+              td3.innerHTML = modified[i]
+              tr.appendChild(td1)
+              tr.appendChild(td2)
+              tr.appendChild(td3)
+              comments.appendChild(tr)
+          }
+      })
+      formComment.addEventListener('submit', (e) => {
+          if (clauses.length <= 0) {
+              e.preventDefault()
+              alert('Добавьте комментарии')
+              return
+          }
+          let formData = new FormData();
+          for (let i = 0; i < clauses.length; i++) {
+              let inp1 = document.createElement('input')
+              inp1.hidden = true
+              inp1.name = 'clause'
+              inp1.value = clauses[i]
+              formComment.appendChild(inp1)
+              let inp2 = document.createElement('input')
+              inp2.hidden = true
+              inp2.name = 'original'
+              inp2.value = originals[i]
+              formComment.appendChild(inp2)
+              let inp3 = document.createElement('input')
+              inp3.hidden = true
+              inp3.name = 'modified'
+              inp3.value = modified[i]
+              formComment.appendChild(inp3)
+          }
+          let inpStatus = document.createElement('input')
+          inpStatus.hidden = true
+          inpStatus.name = 'status'
+          inpStatus.value = '0'
+          formComment.appendChild(inpStatus)
+      })
+      formWithoutComment.addEventListener('submit', (e) => {
+          let inpStatus = document.createElement('input')
+          inpStatus.hidden = true
+          inpStatus.name = 'status'
+          inpStatus.value = '1'
+          formWithoutComment.appendChild(inpStatus)
+      })
+  });
+</script>
+{% endblock %}

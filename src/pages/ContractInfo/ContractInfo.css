@@ -1,0 +1,18 @@
+.conract-info {
+    margin: 15px 50px 0 50px;
+}
+
+.conract-info__description {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    color: hsla(210, 8%, 44%, 1);
+}
+
+.conract-info__link:hover {
+    color: hsla(230, 100%, 50%, 1);
+}
+
+.open-remarks {
+    color: hsla(230, 100%, 50%, 1);
+    cursor: pointer;
+}

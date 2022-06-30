@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block body %}
+<style>
+  .button-orange {
+    background-color: #fc924a !important;
+    border: #fc924a !important;
+  }
+  .main-text {
+    color: #5d5d5d !important;
+  }
+  .status_wait {
+    color: #fc924a !important;
+    font-weight: 600;
+  }
+  .status_ok {
+    color: #06a601 !important;
+    font-weight: 600;
+  }
+  .status_remarks {
+    color: red !important;
+    font-weight: 600;
+  }
+</style>
+<div class="container">
+  <h5 class="main-text">{{ contract.title }}</h5>
+  <p class="main-text">
+    Контрагент: {{ contract.name }}<br/>
+    Дата загрузки: {{ contract.created_at.strftime("%H:%M %d.%m.%Y") }}<br/>
+    {% if contract.sent_at is not none %}
+      Отправлен контрагенту
+    {% elif contract.signed_at is not none %}
+      Ожидает отправки контрагенту
+    {% elif contract.agreed_at is not none %}
+      Ожидает подписи директора
+    {% elif contract.agreed_by_all is true %}
+      Необходима виза
+    {% elif contract.agreed_by_all is false %}
+      Статус:
+      {% set delta = contract.created_at + datetime.timedelta(days=3) - datetime.datetime.now() %}
+      {% set days = delta.days %}
+      {% set seconds = delta.seconds %}
+      {{ time_left(days, seconds) | safe }}
+    {% endif %}
+  </p>
+<!--  TODO: Добавить вывод контрагента -->
+  <table class="table main-text">
+    <thead>
+      <tr>
+        <th>№</th>
+        <th>Подразделение</th>
+        <th>ФИО согласующего</th>
+        <th>Результат</th>
+        <th>Комментарии</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for agreement in agreements %}
+        <tr>
+          <th>{{ loop.index }}</th>
+          <td>{{ agreement.role_name }}</td>
+          <td>{{ agreement.name }}</td>
+          <!-- <td class="status_ok"> -->
+            {% if agreement.status is none %}
+            <td class="status_wait">Согласуется</td>
+            {% elif agreement.status %}
+            <td class="status_ok">Согласовано</td>
+            {% else %}
+            <td class="status_remarks">Согласовано с замечаниями</td>
+            {% endif %}
+          <!-- </td> -->
+          <td>
+            {% if agreement.status is false %}
+            <button type="button" id="openComments" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#cvu{{ agreement.cvu_id }}">
+              Открыть
+            </button>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if new %}
+    <a class="btn btn-primary button-orange" href="{{ url_for('web.contracts.update_page', c_id=contract.id) }}">Загрузить новую версию</a>
+  {% endif %}
+
+  {% if contract.sent_at is not none %}
+    <p><b>Договор завизирован</b></p>
+    <p><b>Договор подписан</b></p>
+    <p><b>Договор отправлен контрагенту</b></p>
+    <a href="{{ url_for('web.contracts.result_docx', c_id=contract.id) }}">Скачать договор (.docx)</a>
+    <a href="{{ url_for('web.contracts.result_pdf', c_id=contract.id) }}">Скачать договор (.pdf)</a>
+    <br/>
+    <a href="{{ url_for('web.contracts.approval_sheet_docx', c_id=contract.id) }}">Скачать лист согласования (.docx)</a>
+<!--    <a href="{{ url_for('web.contracts.approval_sheet_pdf', c_id=contract.id) }}">Скачать лист согласования (.pdf)</a>-->
+  {% elif contract.signed_at is not none %}
+    <p><b>Договор завизирован</b></p>
+    <p><b>Договор подписан</b></p>
+    {% if contract.created_by == current_user.id %}
+      <form method="post" action="{{ url_for('web.contracts.send', c_id=contract.id) }}">
+        <button type="submit" class="btn btn-primary button-orange">Отправить контрагенту</button>
+      </form>
+    {% endif %}
+    <a href="{{ url_for('web.contracts.result_docx', c_id=contract.id) }}">Скачать договор (.docx)</a>
+    <a href="{{ url_for('web.contracts.result_pdf', c_id=contract.id) }}">Скачать договор (.pdf)</a>
+    <br />
+    <a href="{{ url_for('web.contracts.approval_sheet_docx', c_id=contract.id) }}">Скачать лист согласования (.docx)</a>
+<!--    <a href="{{ url_for('web.contracts.approval_sheet_pdf', c_id=contract.id) }}">Скачать лист согласования (.pdf)</a>-->
+  {% elif contract.agreed_at is not none %}
+    <p><b>Договор завизирован</b></p>
+    {% if contract.should_signed_by == current_user.id %}
+    <form method="post" action="{{ url_for('web.contracts.sign', c_id=contract.id) }}">
+      <button type="submit" class="btn btn-primary button-orange">Подписать</button>
+    </form>
+  {% endif %}
+  <a href="{{ url_for('web.contracts.result_docx', c_id=contract.id) }}">Скачать договор (.docx)</a>
+  <a href="{{ url_for('web.contracts.result_pdf', c_id=contract.id) }}">Скачать договор (.pdf)</a>
+  {% elif contract.agreed_by_all is true and contract.created_by == current_user.id %}
+    <form method="post" action="{{ url_for('web.contracts.approve', c_id=contract.id) }}">
+      <button type="submit" class="btn btn-primary button-orange">Завизировать</button>
+    </form>
+  {% endif %}
+
+</div>
+
+{% for agreement in agreements %}
+{% if agreement.status is false %}
+<div class="modal" id="cvu{{ agreement.cvu_id }}" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ agreement.role_name }} / {{ agreement.name }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Пункт договора</th>
+              <th>Исходный текст</th>
+              <th>Измененный текст</th>
+            </tr>
+          </thead>
+          <tbody id="comments">
+          {% for comment in agreement.comments %}
+            <tr>
+              <td>{{ comment.clause }}</td>
+              <td>{{ comment.original }}</td>
+              <td>{{ comment.modified }}</td>
+            </tr>
+          {% endfor %}
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endfor %}
+{% endblock %}

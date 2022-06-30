@@ -1,0 +1,31 @@
+{% set hours = seconds // 3600 %}
+{% if days < 0 %}
+  <span class="text-danger">Не согласован в срок</span>
+{% else %}
+  На согласование отсталось
+  {% if days > 0 %}
+     {{ days }}
+    {% if days % 10 == 1 and days != 11 %}
+      день
+    {% elif 2 <= days % 10 <= 4 %}
+      дня
+    {% else %}
+      дней
+    {% endif %}
+    {% if hours > 1 %}
+      и
+    {% endif %}
+  {% endif %}
+  {% if hours > 1 %}
+    {{ hours }}
+    {% if hours % 10 == 1 and hours != 11 %}
+      час
+    {% elif 2 <= hours % 10 <= 4 %}
+      часа
+    {% else %}
+      часов
+    {% endif %}
+  {% elif seconds > 0 %}
+    меньше часа
+  {% endif %}
+{% endif %}
